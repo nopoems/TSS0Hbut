@@ -27,7 +27,18 @@
         .qa-item { background: #f5faff; border-radius: 18px; padding: 14px 16px; border-left: 5px solid #4895d6; }
         .qa-item:hover { background: #e3f0fd; }
         .question { font-weight: 700; font-size: 1.05rem; color: #0a3957; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-        .answer { font-size: 0.95rem; color: #1f4460; padding-left: 28px; background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23367fb3" stroke-width="2"><path d="M20 12H4M12 4v16"/></svg>') left center no-repeat; background-size: 18px; line-height: 1.5; }
+        .answer {
+            font-size: 0.95rem;
+            color: #1f4460;
+            padding-left: 28px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23367fb3" stroke-width="2"><path d="M20 12H4M12 4v16"/></svg>') left center no-repeat;
+            background-size: 18px;
+            line-height: 1.5;
+            /* 新增换行控制 */
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            word-break: break-word;
+        }
         .footer { margin-top: 50px; padding: 20px 10px 10px; text-align: center; color: #5d7690; font-size: 0.95rem; border-top: 2px dashed #b7d3ea; }
         .footer a { color: #1d5b8c; text-decoration: none; font-weight: 500; }
         .footer a:hover { text-decoration: underline; }
@@ -67,7 +78,7 @@
                 { q: "勤工助学岗位如何申请？", a: "关注各年级群辅导员消息，或直接咨询辅导员叶老师（西六学工办103），不定期发布岗位。" }
             ]},
             { name: "🎉 活动竞赛", icon: "fa-trophy", questions: [
-                { q: "数学建模/物理竞赛怎么报名？", a: "关注年级群通知，在相应竞赛官网进行报名。更多信息可访问jwc.kmu.edu.cn/info/1020/2683.htm，有其他学校按月份整理的竞赛日程。" },
+                { q: "数学建模/物理竞赛怎么报名？", a: "关注年级群通知，在相应竞赛官网进行报名。更多信息可访问https://jwc.kmu.edu.cn/info/1020/2683.htm，有其他学校按月份整理的竞赛日程。" },
                 { q: "志愿者活动参与方式", a: "下载志愿汇APP，登陆后有所在地各志愿组织发布的志愿者招募，报名即可参加。或关注年级群和校志愿者群，了解志愿招募信息。" },
                 { q: "学生会举办的大型活动时间表", a: "迎新晚会：9月/10月、校运会：10月/11月、春季运动会（院运会）：4月/5月、心理健康月系列活动：5月，具体见年级群各部门宣传。" }
             ]},
