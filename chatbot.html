@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>理学院 · 智能问答机器人</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background-color: #f0f5fa; line-height: 1.6; color: #1e2b3c; padding: 0 16px 20px; }
+        .container { max-width: 1280px; margin: 0 auto; background-color: white; border-radius: 32px 32px 24px 24px; box-shadow: 0 15px 35px rgba(0, 30, 60, 0.1); padding: 0 24px 32px; }
+        .header { text-align: center; padding: 40px 20px 20px; background: linear-gradient(135deg, #eef5ff 0%, #ffffff 80%); border-bottom: 1px solid #d9e8f5; margin-bottom: 30px; }
+        .header-logo {
+            height: 100px;         /* 根据您的图片调整 */
+            width: auto;
+            object-fit: contain;}
+        .header h1 { font-size: 2.5rem; font-weight: 600; color: #0a2942; margin-bottom: 8px; }
+        .header h1 i { color: #2a6d9c; margin-right: 12px; }
+        .header p { font-size: 1.15rem; color: #2f5575; background: rgba(42, 109, 156, 0.06); display: inline-block; padding: 8px 28px; border-radius: 40px; }
+        .section-title { display: flex; align-items: center; gap: 12px; font-size: 1.9rem; font-weight: 600; color: #144a70; margin: 40px 0 24px 0; padding-bottom: 10px; border-bottom: 3px solid #c3dff5; }
+        
+        /* 聊天窗口样式 */
+        .chat-wrapper {
+            background: #f7fbfe;
+            border-radius: 32px;
+            padding: 20px;
+            box-shadow: inset 0 2px 8px rgba(0,40,70,0.04);
+            border: 1px solid #cfe1f0;
+        }
+        .message-list {
+            height: 380px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 16px 20px;
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 4px 12px rgba(0,30,60,0.05);
+            margin-bottom: 20px;
+        }
+        .message {
+            max-width: 80%;
+            padding: 12px 18px;
+            border-radius: 22px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            font-size: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+        .user-message {
+            align-self: flex-end;
+            background-color: #1d5b8c;
+            color: white;
+            border-bottom-right-radius: 6px;
+            border-top-left-radius: 22px;
+            border-top-right-radius: 22px;
+        }
+        .bot-message {
+            align-self: flex-start;
+            background-color: #e9f0f9;
+            color: #0a2942;
+            border-bottom-left-radius: 6px;
+            border-top-left-radius: 22px;
+            border-top-right-radius: 22px;
+        }
+        .input-area {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            background: white;
+            padding: 8px 16px 8px 24px;
+            border-radius: 60px;
+            border: 1px solid #c3d9ec;
+            box-shadow: 0 6px 14px rgba(25,85,130,0.08);
+        }
+        .input-area input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 1.05rem;
+            padding: 14px 0;
+            background: transparent;
+            color: #1b4b72;
+        }
+        .input-area input::placeholder {
+            color: #88a7c5;
+            font-weight: 300;
+        }
+        .send-btn {
+            background-color: #1d5b8c;
+            border: none;
+            color: white;
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            font-size: 1.4rem;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 10px rgba(25,85,130,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .send-btn:hover {
+            background-color: #0f4168;
+            transform: scale(1.04);
+        }
+        .send-btn i {
+            margin-left: 3px;
+        }
+        .hint-tip {
+            color: #4d7291;
+            margin-top: 12px;
+            font-size: 0.9rem;
+            padding-left: 12px;
+        }
+        .footer { margin-top: 50px; padding: 20px 10px 10px; text-align: center; color: #5d7690; font-size: 0.95rem; border-top: 2px dashed #b7d3ea; }
+        .footer a { color: #1d5b8c; text-decoration: none; font-weight: 500; }
+        .footer a:hover { text-decoration: underline; }
+        @media (max-width: 600px) {
+            .header h1 { font-size: 2rem; }
+            .message { max-width: 90%; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <img src="https://ts1.tc.mm.bing.net/th/id/R-C.79331acb245bf4082b5ec27439352584?rik=rIitBMlcp4cgEw&riu=http%3a%2f%2foss.vismatrix.cn%2fuploads%2f20210205%2fFkp8HcpbqDGZ7S3dxZpBXN4mfJPF.png&ehk=RRzAG2PK9SU6Lq7JWUjjCif%2feh2j9SxUFZpe9TCZJKs%3d&risl=&pid=ImgRaw&r=0" alt="理学院logo" class="header-logo">
+        <h1><i class="fas fa-robot"></i> 理学院 · 智能问答</h1>
+        <p>7×24小时自动回复 · 关键词匹配</p>
+    </div>
+
+    <div class="section-title">
+        <i class="fas fa-comment-dots"></i>
+        <span>💬 与机器人“小理”聊天</span>
+    </div>
+
+    <!-- 聊天区域 -->
+    <div class="chat-wrapper">
+        <div id="messageList" class="message-list">
+            <!-- 欢迎消息由JS动态添加，确保结构统一 -->
+        </div>
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="输入问题，例如：宣传部做什么？" autofocus>
+            <button class="send-btn" id="sendBtn"><i class="fas fa-paper-plane"></i></button>
+        </div>
+        <div class="hint-tip">
+            <i class="fas fa-lightbulb"></i> 试试问：部门、教师电话、缓考、校园卡、竞赛、志愿者、就业
+        </div>
+        <div class="hint-tip">
+            <i class="fas fa-lightbulb"></i> 如果没有得到想要的答案，可投递邮箱：1828248203@qq.com，欢迎投递！
+        </div>
+    </div>
+
+    <div class="footer">
+        <i class="fas fa-university"></i> 理学院学生会 · <a href="index.html">返回首页</a> &nbsp;|&nbsp; 智能问答机器人
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ---------- 预设问答规则 ----------
+        const botRules = [
+            { keywords: ['你好', '您好', 'hi', 'hello', '在吗'], answer: '你好呀！我是小理，理学院智能助手。有什么可以帮你？' },
+            { keywords: ['宣传部', '宣传','新媒体','媒体'], answer: '✨ 宣传部、新媒体：负责公众号运营、海报设计、新闻摄影、活动宣传。想了解详情可查看“部门职责”页面。' },
+            { keywords: ['组织部', '组织'], answer: '✨ 组织部：团日活动、团员发展、学生干部培训、智慧团建维护。' },
+            { keywords: ['学习部', '学习'], answer: '✨ 学习部：新生经验交流会、考勤检查、竞赛信息汇总。' },
+            { keywords: ['文体部', '文体', '文艺', '体育'], answer: '✨ 文体部：策划晚会、十佳歌手、篮球赛、趣味运动会、院队管理。' },
+            { keywords: ['蒲公英', '实践', '志愿者', '志愿'], answer: '✨ 蒲公英：寒暑期社会实践、志愿活动。' },
+            { keywords: ['信联部', '心理', '信息联络', '安全'], answer: '✨ 信联部：更新全院各类信息表、定期晚点名、心理活动、每月心理晴雨表。' },
+            { keywords: ['教师', '老师', '办公室', '电话', '刘少文', '杜文君', '刘豫杰', '关义雄', '饶才骏','叶明明'], answer: '👩‍🏫 教师信息（办公室/电话/邮箱）请访问“教师信息”页面。' },
+            { keywords: ['缓考', '缓考申请'], answer: '📝 缓考：联系教学秘书王老师（B101）领取申请表，附证明材料，任课教师签字后交教务办公室。' },
+            { keywords: ['校园卡', '挂失', '补办'], answer: '💳 校园卡遗失：到学生事务中心（三教文科楼）补办，工本费10元。' },
+            { keywords: ['竞赛', '数学建模', '物理竞赛', '建模'], answer: '🏆 竞赛：数模/物理竞赛由学习部组织，关注“理学竞赛”公众号或学委通知。校赛获奖可获创新学分。' },
+            { keywords: ['就业', '三方', '推荐表', '毕业'], answer: '📄 就业推荐表：登录就业网填写。三方协议遗失补办需登报挂失。' },
+            { keywords: ['志愿者', '青协', '志愿活动'], answer: '❤️ 志愿活动：下载志愿汇APP，登陆后有所在地各志愿组织发布的志愿者招募，报名即可参加。或关注年级群和校志愿者群，了解志愿招募信息。' },
+            { keywords: ['学生会', '部门', '有哪些部门'], answer: '📌 学生会设：蒲公英志愿服务队（学院青年志愿者协会）、组织部、宣传部、新媒体工作室、信联部、学工助理、体育部、生活权益部、学习部、文艺部、纪检部共十一个职能部门，部分职能部门设有二级职能部门，包括辩论队以及各球队。具体职责可访问“部门职责”页面。' },
+            { keywords: ['电话', '联系方式'], answer: '☎️ 常用电话：分团委刘少文老师13437229772；校公安局59750110；校医院18086478982；南湖派出所88038110。' }
+        ];
+
+        const defaultReply = '抱歉，我没有理解您的问题。你可以询问“部门”、“教师信息”、“缓考”、“校园卡”等，或浏览导航页查找。';
+
+        // 获取DOM元素
+        const messageList = document.getElementById('messageList');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        // 添加一条消息到聊天区域
+        function addMessage(sender, text) {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
+            // 简单处理换行/空格，直接设置文本防止XSS
+            msgDiv.textContent = text;
+            messageList.appendChild(msgDiv);
+            // 滚动到底部
+            messageList.scrollTop = messageList.scrollHeight;
+        }
+
+        // 根据用户输入获取机器人回复
+        function getBotReply(input) {
+            if (!input.trim()) return null;  // 空白不回复
+            const lowerInput = input.toLowerCase();
+            for (let rule of botRules) {
+                for (let kw of rule.keywords) {
+                    if (lowerInput.includes(kw.toLowerCase())) {
+                        return rule.answer;
+                    }
+                }
+            }
+            return defaultReply;
+        }
+
+        // 处理发送消息
+        function handleSend() {
+            const text = userInput.value.trim();
+            if (text === '') return;
+
+            // 显示用户消息
+            addMessage('user', text);
+            // 清空输入框
+            userInput.value = '';
+            // 获取回复并显示
+            const reply = getBotReply(text);
+            if (reply) {
+                addMessage('bot', reply);
+            }
+            // 输入框保持焦点
+            userInput.focus();
+        }
+
+        // 初始化：添加欢迎消息
+        addMessage('bot', '你好！我是小理，理学院智能问答助手。请问你想了解什么？例如：“宣传部负责什么？”、“教师办公室”、“缓考流程”……');
+
+        // 绑定发送事件
+        sendBtn.addEventListener('click', handleSend);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+
+        // 可选：防连点，但简单场景无需
+    })();
+</script>
+</body>
+</html>
