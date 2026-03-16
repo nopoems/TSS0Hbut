@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>理学院 · 学习帮助（课表查询）</title>
+    <title>理学院 · 课表查询</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
@@ -17,28 +17,31 @@
         select { padding: 12px 28px; font-size: 1.1rem; border-radius: 40px; border: 1px solid #b4d3ee; background-color: white; color: #0e3d5e; font-weight: 500; cursor: pointer; outline: none; box-shadow: 0 4px 8px rgba(0,30,60,0.05); }
         select:hover { border-color: #1d5b8c; }
         .timetable-container { overflow-x: auto; margin: 30px 0; background: #f7fcff; border-radius: 24px; padding: 20px; border: 1px solid #c3dff5; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 900px; }
-        th { background-color: #1d5b8c; color: white; padding: 12px 8px; font-weight: 600; border: 1px solid #357bb5; }
-        td { border: 1px solid #b9d7f0; padding: 10px 8px; vertical-align: top; background-color: white; }
-        .time-col { background-color: #e2effa; font-weight: 600; color: #0a2942; width: 80px; text-align: center; }
-        .course-info { font-size: 0.85rem; line-height: 1.4; }
-        .course-name { font-weight: 600; color: #144a70; }
-        .course-meta { color: #2f5575; font-size: 0.8rem; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 950px; }
+        th { background-color: #1d5b8c; color: white; padding: 12px 5px; font-weight: 600; border: 1px solid #357bb5; }
+        td { border: 1px solid #b9d7f0; padding: 10px 5px; vertical-align: top; background-color: white; }
+        .time-col { background-color: #e2effa; font-weight: 600; color: #0a2942; width: 80px; text-align: center; white-space: nowrap; }
+        .course-info { font-size: 0.82rem; line-height: 1.45; }
+        .course-name { font-weight: 600; color: #144a70; display: block; }
+        .course-meta { color: #2f5575; font-size: 0.77rem; display: block; }
         .footer { margin-top: 40px; padding: 20px 10px 10px; text-align: center; color: #5d7690; font-size: 0.95rem; border-top: 2px dashed #b7d3ea; }
         .footer a { color: #1d5b8c; text-decoration: none; font-weight: 500; margin: 0 8px; }
         .footer a:hover { text-decoration: underline; }
-        .note { background: #fff3cd; border-left: 6px solid #ffc107; padding: 15px; border-radius: 16px; margin: 20px 0; font-size: 0.95rem; }
+        .note { background: #fff3cd; border-left: 6px solid #ffc107; padding: 15px; border-radius: 16px; margin: 20px 0 0; font-size: 0.9rem; }
+        .note i { color: #b17d0b; margin-right: 6px; }
+        /* 合并单元格后保留边框完整性 */
+        .merged-empty { background-color: #f7fcff; }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <h1><i class="fas fa-book-open"></i> 学习帮助 · 专业课表查询</h1>
-        <p>请选择您的专业班级，自动显示对应课表（23级）</p>
+        <h1><i class="fas fa-calendar-alt"></i> 23级专业课表</h1>
+        <p>在下方选择班级以查看课表</p>
     </div>
 
     <div class="selector-wrapper">
-        <label for="classSelect" style="font-weight:600; color:#144a70;">选择班级：</label>
+        <label for="classSelect" style="font-weight:600; color:#144a70;">📌 班级：</label>
         <select id="classSelect">
             <option value="">-- 请选择 --</option>
             <option value="class1">23电科1 (23111511)</option>
@@ -54,182 +57,218 @@
     </div>
 
     <div id="timetableContainer" class="timetable-container">
-        <!-- 课表将动态显示在这里 -->
         <p style="text-align:center; color:#1f6392; padding:40px;"><i class="fas fa-hand-point-up"></i> 请从上方下拉列表选择班级</p>
     </div>
 
     <div class="footer">
-        <a href="index.html"><i class="fas fa-arrow-left"></i> 返回功能大厅</a> · 
-        <a href="teachers.html">教师信息</a> · 
-        <a href="faq.html">自助问答</a> · 
-        <a href="departments.html">部门职责</a>
+        <a href="#"><i class="fas fa-arrow-left"></i> 返回首页</a> · 
     </div>
 </div>
 
 <script>
-    (function() {
-        // 预定义所有班级的课表HTML（基于PDF内容整理）
-        const timetableData = {
-            class1: `<!-- 23电科1 -->
-                <table>
-                    <thead><tr><th>时间</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead>
-                    <tbody>
-                        <tr><td class="time-col">1<br>8:20-9:05</td><td>纳米材料科学与技术<br><span class="course-meta">蒋妍 [1-7周] 5B-314</span></td><td></td><td>嵌入式系统<br><span class="course-meta">崔贤岱 [1-10周] 2-005</span></td><td>光伏原理与技术<br><span class="course-meta">蔡金龙 [1-8周] 2-103</span></td><td>嵌入式系统<br><span class="course-meta">崔贤岱 [1-9周] 3-001</span></td><td></td><td></td></tr>
-                        <tr><td class="time-col">2<br>9:10-9:55</td><td>纳米材料科学与技术<br><span class="course-meta">蒋妍 [1-7周] 5B-314</span></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">3<br>10:15-11:00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">4<br>11:05-11:50</td><td></td><td></td><td></td><td></td><td>纳米材料科学与技术<br><span class="course-meta">胡培 [1-7,8周]</span></td><td></td><td></td></tr>
-                        <tr><td class="time-col">5<br>14:00-14:45</td><td>激光原理与技术<br><span class="course-meta">张威 [1-8周] 2-310</span></td><td>半导体器件物理<br><span class="course-meta">周远明 [1-12周] 3-401</span></td><td>激光原理与技术<br><span class="course-meta">张威 [1-8周] 3-102</span></td><td>半导体器件物理<br><span class="course-meta">周远明 [1-12周] 3-406</span></td><td>电子材料与器件<br><span class="course-meta">蒋妍 [1-10周] 2-507</span></td><td></td><td></td></tr>
-                        <tr><td class="time-col">6<br>14:50-15:35</td><td></td><td></td><td></td><td></td><td>电子材料与器件<br><span class="course-meta">蒋妍 [1-10周] 3-108</span></td><td></td><td></td></tr>
-                        <tr><td class="time-col">7<br>15:55-16:40</td><td>集成电路分析与设计<br><span class="course-meta">张冉 [1-10周]</span></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">8<br>16:45-17:30</td><td>集成电路分析与设计<br><span class="course-meta">张冉 [1-10周]</span></td><td></td><td></td><td>光伏原理与技术<br><span class="course-meta">蔡金龙 [1-8周] 3-206</span></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">9<br>18:30-19:15</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">10<br>19:20-20:05</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">11<br>20:10-20:55</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                    </tbody>
-                </table>
-                <div class="note"><i class="fas fa-clipboard-list"></i> 实践环节：集成电路设计实训【张冉（15）】；学科竞赛培训实践2【张威（16-17）、李劲（16-17）】</div>`,
-            class2: `<!-- 23集成1 -->
-                <table>
-                    <thead><tr><th>时间</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead>
-                    <tbody>
-                        <tr><td class="time-col">1<br>8:20-9:05</td><td>嵌入式系统<br><span class="course-meta">崔贤岱 [1-10周] 2-005</span></td><td>集成电路封装与测试技术<br><span class="course-meta">范金虎 [1-8周] 2-102</span></td><td>嵌入式系统<br><span class="course-meta">崔贤岱 [1-9周] 3-001</span></td><td>集成电路封装与测试技术<br><span class="course-meta">范金虎 [1-8周] 3-203</span></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">2<br>9:10-9:55</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">3<br>10:15-11:00</td><td>CMOS数字集成电路设计<br><span class="course-meta">邹维 [1-12周] 2-409</span></td><td>SoC片上系统设计<br><span class="course-meta">葛旭 [1-6周] 3-208</span></td><td>CMOS数字集成电路设计<br><span class="course-meta">邹维 [1-12周] 3-308</span></td><td>集成电路版图设计<br><span class="course-meta">胡阳森 [1-8周] 3-506</span></td><td>SoC片上系统设计<br><span class="course-meta">葛旭 [1-6周] 2-111</span></td><td></td><td></td></tr>
-                        <tr><td class="time-col">4<br>11:05-11:50</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">5<br>14:00-14:45</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">6<br>14:50-15:35</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">7<br>15:55-16:40</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">8<br>16:45-17:30</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">9<br>18:30-19:15</td><td>大学生生涯发展与就业指导-2<br><span class="course-meta">刘豫杰 [10-12周] 2-511</span></td><td></td><td></td><td>形势与政策-6<br><span class="course-meta">余姣 [2-5周] 工1-A003</span></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">10<br>19:20-20:05</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">11<br>20:10-20:55</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                    </tbody>
-                </table>
-                <div class="note"><i class="fas fa-clipboard-list"></i> 实践环节：集成电路设计课程设计【陈本源（15）】；学科竞赛培训实践2【陈本源（16-17）李劲（16-17）邹维（16-17）江俊帮（16-17）】</div>`,
-            class3: `<!-- 23集成2 -->
-                <table>
-                    <thead><tr><th>时间</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead>
-                    <tbody>
-                        <tr><td class="time-col">1<br>8:20-9:05</td><td rowspan="2">嵌入式系统<br><span class="course-meta">崔贤岱 [1-10周] 2-005</span></td><td rowspan="2">集成电路封装与测试技术<br><span class="course-meta">范金虎 [1-8周]</span></td><td rowspan="2">嵌入式系统<br><span class="course-meta">崔贤岱 [1-9周] 3-001</span></td><td rowspan="2">集成电路封装与测试技术<br><span class="course-meta">范金虎 [1-8周]</span></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">2<br>9:10-9:55</td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">3<br>10:15-11:00</td><td>CMOS数字集成电路设计<br><span class="course-meta">张力(1周)/张锋(2-12周) 2-101/2-100</span></td><td>SoC片上系统设计<br><span class="course-meta">葛旭 [1-6周] 3-208</span></td><td>集成电路版图设计<br><span class="course-meta">胡阳森 [1-8周] 3-506</span></td><td>SoC片上系统设计<br><span class="course-meta">葛旭 [1-6周] 2-111</span></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">4<br>11:05-11:50</td><td>CMOS数字集成电路设计<br><span class="course-meta">张锋 [1-12周] 2-100</span></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">5<br>14:00-14:45</td><td>CMOS数字集成电路设计<br><span class="course-meta">张锋 [1-12周] 2-100</span></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">6<br>14:50-15:35</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">7<br>15:55-16:40</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">8<br>16:45-17:30</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">9<br>18:30-19:15</td><td>大学生生涯发展与就业指导-2<br><span class="course-meta">刘豫杰 [10-12周] 2-511</span></td><td></td><td></td><td>形势与政策-6<br><span class="course-meta">余姣 [2-5周] 工1-A003</span></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">10<br>19:20-20:05</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">11<br>20:10-20:55</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                    </tbody>
-                </table>
-                <div class="note"><i class="fas fa-clipboard-list"></i> 实践环节：集成电路设计课程设计【陈本源（15）】；学科竞赛培训实践2【陈本源（16-17）、李劲（16-17）、邹维（16-17）、江俊帮（16-17）】</div>`,
-            class4: `<!-- 23微电子1 -->
-                <table>
-                    <thead><tr><th>时间</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead>
-                    <tbody>
-                        <tr><td class="time-col">1<br>8:20-9:05</td><td rowspan="3">信息存储技术<br><span class="course-meta">王晗 [1-8周] 3-305</span></td><td></td><td rowspan="3">信息存储技术<br><span class="course-meta">王晗 [1-8周] 3-305</span></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">2<br>9:10-9:55</td><td>集成电路封装与测试技术<br><span class="course-meta">袁仙丹 [1-8周] 2-308</span></td><td>集成电路封装与测试技术<br><span class="course-meta">袁仙丹 [1-8周] 2-507</span></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">3<br>10:15-11:00</td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">4<br>11:05-11:50</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">5<br>14:00-14:45</td><td>微机电系统设计与制造<br><span class="course-meta">何超 [1-14周] 2-002</span></td><td>集成电路版图设计<br><span class="course-meta">张锋 [1-8周] 3-001</span></td><td>微机电系统设计与制造<br><span class="course-meta">何超 [1-14周] 2-002</span></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">6<br>14:50-15:35</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">7<br>15:55-16:40</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">8<br>16:45-17:30</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">9<br>18:30-19:15</td><td>大学生生涯发展与就业指导-2<br><span class="course-meta">荣光存 [4-6周] 3-004</span></td><td></td><td></td><td>形势与政策-6<br><span class="course-meta">何家华 [2-5周] 1-003</span></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">10<br>19:20-20:05</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">11<br>20:10-20:55</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                    </tbody>
-                </table>
-                <div class="note"><i class="fas fa-clipboard-list"></i> 实践环节：学科竞赛培训实践2【成纯富(16-17)、陈本源(16-17)、李根(16-17)、李劲(16-17)、邹维(16-17)、江俊帮(16-17)】</div>`,
-            class5: `<!-- 23微电子2 -->
-                <table>
-                    <thead><tr><th>时间</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead>
-                    <tbody>
-                        <tr><td class="time-col">1<br>8:20-9:05</td><td>信息存储技术<br><span class="course-meta">胡阳森 [1-8周] 2-308</span></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">2<br>9:10-9:55</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">3<br>10:15-11:00</td><td>信息存储技术<br><span class="course-meta">胡阳森 [1-8周] 3-308</span></td><td>集成电路封装与测试技术<br><span class="course-meta">范金虎 [1-8周] 3-208</span></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">4<br>11:05-11:50</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">5<br>14:00-14:45</td><td>微机电系统设计与制造<br><span class="course-meta">何超 [1-14周] 2-002</span></td><td>集成电路版图设计<br><span class="course-meta">张锋 [1-8周] 3-001</span></td><td>微机电系统设计与制造<br><span class="course-meta">何超 [1-14周] 2-002</span></td><td>集成电路封装与测试技术<br><span class="course-meta">范金虎 [1-8周] 3-202</span></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">6<br>14:50-15:35</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">7<br>15:55-16:40</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">8<br>16:45-17:30</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">9<br>18:30-19:15</td><td>大学生生涯发展与就业指导-2<br><span class="course-meta">荣光存 [4-6周] 3-004</span></td><td></td><td></td><td>形势与政策-6<br><span class="course-meta">何家华 [2-5周] 1-003</span></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">10<br>19:20-20:05</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">11<br>20:10-20:55</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                    </tbody>
-                </table>
-                <div class="note"><i class="fas fa-clipboard-list"></i> 实践环节：学科竞赛培训实践2【成纯富(16-17)、陈本源(16-17)、李根(16-17)、李劲(16-17)、邹维(16-17)、江俊帮(16-17)】</div>`,
-            class6: `<!-- 23微电子3 -->
-                <table>
-                    <thead><tr><th>时间</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead>
-                    <tbody>
-                        <tr><td class="time-col">1<br>8:20-9:05</td><td></td><td></td><td>信息存储技术<br><span class="course-meta">贺晶 [1-8周] 3-308</span></td><td>集成电路封装与测试技术<br><span class="course-meta">范金虎 [1-8周] 3-208</span></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">2<br>9:10-9:55</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">3<br>10:15-11:00</td><td>信息存储技术<br><span class="course-meta">贺晶 [1-8周] 2-508</span></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">4<br>11:05-11:50</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">5<br>14:00-14:45</td><td>微机电系统设计与制造<br><span class="course-meta">何超 [1-14周] 2-002</span></td><td>集成电路版图设计<br><span class="course-meta">张锋 [1-8周] 3-001</span></td><td>微机电系统设计与制造<br><span class="course-meta">何超 [1-14周] 2-002</span></td><td>集成电路封装与测试技术<br><span class="course-meta">范金虎 [1-8周] 3-202</span></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">6<br>14:50-15:35</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">7<br>15:55-16:40</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">8<br>16:45-17:30</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">9<br>18:30-19:15</td><td>形势与政策-6<br><span class="course-meta">何家华 [2-5周] 1-003</span></td><td></td><td>大学生生涯发展与就业指导-2<br><span class="course-meta">荣光存 [4-6周] 2-401</span></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">10<br>19:20-20:05</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">11<br>20:10-20:55</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                    </tbody>
-                </table>
-                <div class="note"><i class="fas fa-clipboard-list"></i> 实践环节：学科竞赛培训实践2【成纯富(16-17)、陈本源(16-17)、李根(16-17)、李劲(16-17)、邹维(16-17)、江俊帮(16-17)】</div>`,
-            class7: `<!-- 23信计1 -->
-                <table>
-                    <thead><tr><th>时间</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead>
-                    <tbody>
-                        <tr><td class="time-col">1<br>8:20-9:05</td><td>数据挖掘<br><span class="course-meta">安威 [1-8周] 2-005</span></td><td></td><td>数据挖掘<br><span class="course-meta">安威 [1-8周] 3-001</span></td><td></td><td>数据挖掘<br><span class="course-meta">安威 [1-8周] 2-006</span></td><td></td><td></td></tr>
-                        <tr><td class="time-col">2<br>9:10-9:55</td><td>模式识别<br><span class="course-meta">荣伏梅 [3-12周]</span></td><td>信息论与编码<br><span class="course-meta">吴颖丹 [1-12周]</span></td><td>模式识别<br><span class="course-meta">荣伏梅 [3-12周]</span></td><td>信息论与编码<br><span class="course-meta">吴颖丹 [1-12周]</span></td><td>统计计算<br><span class="course-meta">吴颖丹 [1-8周] 2-001</span></td><td></td><td></td></tr>
-                        <tr><td class="time-col">3<br>10:15-11:00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">4<br>11:05-11:50</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">5<br>14:00-14:45</td><td>统计计算<br><span class="course-meta">吴聪 [1-8周] 2-008</span></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">6<br>14:50-15:35</td><td></td><td>信息安全与密码学<br><span class="course-meta">陈华 [1-12周]</span></td><td>信息安全与密码学<br><span class="course-meta">陈华 [1-12周]</span></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">7<br>15:55-16:40</td><td></td><td></td><td></td><td>信息安全与密码学<br><span class="course-meta">陈华 [1-12周]</span></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">8<br>16:45-17:30</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">9<br>18:30-19:15</td><td>形势与政策-6<br><span class="course-meta">甘艳 [2-5周] 工1-A003</span></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">10<br>19:20-20:05</td><td>大学生生涯发展与就业指导-2<br><span class="course-meta">饶才骏 [7-9周]</span></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">11<br>20:10-20:55</td><td>大学生生涯发展与就业指导-2<br><span class="course-meta">饶才骏 [7-9周]</span></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                    </tbody>
-                </table>
-                <div class="note"><i class="fas fa-clipboard-list"></i> 实践环节：数据处理实习【许松林(15-17)、方次军(15-17)、吴颖丹(15-17)、荣伏梅(15-17)】；数据挖掘课程设计【安威(14)】；信息论与编码课程设计【吴颖丹(13)】</div>`,
-            class8: `<!-- 23信计2 -->
-                <table>
-                    <thead><tr><th>时间</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead>
-                    <tbody>
-                        <tr><td class="time-col">1<br>8:20-9:05</td><td>数据挖掘<br><span class="course-meta">安威 [1-8周] 2-005</span></td><td></td><td>数据挖掘<br><span class="course-meta">安威 [1-8周] 3-001</span></td><td></td><td>数据挖掘<br><span class="course-meta">安威 [1-8周] 2-006</span></td><td></td><td></td></tr>
-                        <tr><td class="time-col">2<br>9:10-9:55</td><td>模式识别<br><span class="course-meta">荣伏梅 [3-12周]</span></td><td>信息论与编码<br><span class="course-meta">吴颖丹 [1-12周]</span></td><td>模式识别<br><span class="course-meta">荣伏梅 [3-12周]</span></td><td>信息论与编码<br><span class="course-meta">吴颖丹 [1-12周]</span></td><td>统计计算<br><span class="course-meta">吴颖丹 [1-8周] 2-001</span></td><td></td><td></td></tr>
-                        <tr><td class="time-col">3<br>10:15-11:00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">4<br>11:05-11:50</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">5<br>14:00-14:45</td><td>统计计算<br><span class="course-meta">吴颖 [1-8周] 2-008</span></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">6<br>14:50-15:35</td><td></td><td>信息安全与密码学<br><span class="course-meta">陈华 [1-12周]</span></td><td>信息安全与密码学<br><span class="course-meta">陈华 [1-12周]</span></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">7<br>15:55-16:40</td><td colspan="2"></td><td></td><td>信息安全与密码学<br><span class="course-meta">陈华 [1-12周]</span></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">8<br>16:45-17:30</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">9<br>18:30-19:15</td><td>形势与政策-6<br><span class="course-meta">甘艳 [2-5周] 工1-A003</span></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">10<br>19:20-20:05</td><td>大学生生涯发展与就业指导-2<br><span class="course-meta">饶才骏 [7-9周]</span></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr><td class="time-col">11<br>20:10-20:55</td><td>大学生生涯发展与就业指导-2<br><span class="course-meta">饶才骏 [7-9周]</span></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                    </tbody>
-                </table>
-                <div class="note"><i class="fas fa-clipboard-list"></i> 实践环节：数据处理实习【许松林(15-17)、方次军(15-17)、吴颖丹(15-17)、荣伏梅(15-17)】；数据挖掘课程设计【安威(14)】；信息论与编码课程设计【吴颖丹(13)】</div>`,
-            class9: `<!-- 23统计1 (无课表) -->
-                <p style="text-align:center; padding:40px; background: #f8f9fa; border-radius: 16px;"><i class="fas fa-exclamation-circle"></i> 该班级暂无可用的课表数据。</p>`
-        };
+(function() {
+    // ==================== 合并后的静态课表（手动合并，符合1-2、3-4、5-6、7-8、9-11合并）====================
+    const timetableData = {
+        class1: `<!-- 23电科1班 合并版 -->
+        <table>
+            <thead><tr><th>节次/时间</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead>
+            <tbody>
+                <!-- 1-2节合并 (rowspan=2) -->
+                <tr>
+                    <td class="time-col" rowspan="2">1-2<br>8:20-9:55</td>
+                    <td rowspan="2"><span class="course-name">纳米材料科学与技术</span><span class="course-meta">蒋妍[1-7] 胡培[8] 5B-314</span></td>
+                    <td rowspan="2"><span class="course-name">嵌入式系统</span><span class="course-meta">崔贤岱[1-10] 2-005</span></td>
+                    <td rowspan="2"><span class="course-name">光伏原理与技术</span><span class="course-meta">蔡金龙[1-8] 2-103</span></td>
+                    <td rowspan="2"><span class="course-name">嵌入式系统</span><span class="course-meta">崔贤岱[1-9] 3-001</span></td>
+                    <td rowspan="2"><span class="course-name">纳米材料科学与技术</span><span class="course-meta">蒋妍[1-6] 胡培[7-8] 5B-311</span></td>
+                    <td rowspan="2"></td>
+                    <td rowspan="2"></td>
+                </tr>
+                <tr></tr> <!-- 占位，因为上一行rowspan=2，此行的列单元格被覆盖，不需要额外td -->
+                <!-- 3-4节合并 -->
+                <tr>
+                    <td class="time-col" rowspan="2">3-4<br>10:15-11:50</td>
+                    <td rowspan="2"><span class="course-name">激光原理与技术</span><span class="course-meta">张威[1-8] 2-310</span></td>
+                    <td rowspan="2"><span class="course-name">半导体器件物理</span><span class="course-meta">周远明[1-12] 3-401</span></td>
+                    <td rowspan="2"><span class="course-name">激光原理与技术</span><span class="course-meta">张威[1-8] 3-102</span></td>
+                    <td rowspan="2"><span class="course-name">半导体器件物理</span><span class="course-meta">周远明[1-12] 3-406</span></td>
+                    <td rowspan="2"><span class="course-name">电子材料与器件</span><span class="course-meta">蒋妍[1-10] 2-507</span></td>
+                    <td rowspan="2"></td>
+                    <td rowspan="2"></td>
+                </tr>
+                <tr></tr>
+                <!-- 5-6节合并 -->
+                <tr>
+                    <td class="time-col" rowspan="2">5-6<br>14:00-15:35</td>
+                    <td rowspan="2"><span class="course-name">电子材料与器件</span><span class="course-meta">蒋妍[1-10] 3-108</span></td>
+                    <td rowspan="2"><span class="course-name">集成电路分析与设计</span><span class="course-meta">张冉[1-10] 2-307</span></td>
+                    <td rowspan="2"></td>
+                    <td rowspan="2"></td>
+                    <td rowspan="2"><span class="course-name">集成电路分析与设计</span><span class="course-meta">张冉[1-10] 3-204</span></td>
+                    <td rowspan="2"></td>
+                    <td rowspan="2"></td>
+                </tr>
+                <tr></tr>
+                <!-- 7-8节合并 -->
+                <tr>
+                    <td class="time-col" rowspan="2">7-8<br>15:55-17:30</td>
+                    <td rowspan="2"><span class="course-name">光伏原理与技术</span><span class="course-meta">蔡金龙[1-8] 3-206</span></td>
+                    <td rowspan="2"></td>
+                    <td rowspan="2"></td>
+                    <td rowspan="2"></td>
+                    <td rowspan="2"></td>
+                    <td rowspan="2"></td>
+                    <td rowspan="2"></td>
+                </tr>
+                <tr></tr>
+                <!-- 9-11节合并 (晚上) -->
+                <tr>
+                    <td class="time-col" rowspan="3">9-11<br>18:30-20:55</td>
+                    <td rowspan="3"></td>
+                    <td rowspan="3"><span class="course-name">形势与政策-6</span><span class="course-meta">甘艳[2-5] 工1-A003</span></td>
+                    <td rowspan="3"></td>
+                    <td rowspan="3"></td>
+                    <td rowspan="3"><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">荣光存[4-6] 2-401</span></td>
+                    <td rowspan="3"></td>
+                    <td rowspan="3"></td>
+                </tr>
+                <tr></tr><tr></tr> <!-- 两个占位行，因为rowspan=3 -->
+            </tbody>
+        </table>
+        <div class="note"><i class="fas fa-clipboard-list"></i> 实践环节：集成电路设计实训【张冉（15）】；学科竞赛培训实践2【张威（16-17）、李劲（16-17）】</div>`,
 
-        const selectEl = document.getElementById('classSelect');
-        const container = document.getElementById('timetableContainer');
+        class2: `<!-- 23集成1班 合并版 -->
+        <table>
+            <thead><tr><th>节次/时间</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead>
+            <tbody>
+                <!-- 1-2 -->
+                <tr><td class="time-col" rowspan="2">1-2<br>8:20-9:55</td><td rowspan="2"></td><td rowspan="2"><span class="course-name">嵌入式系统</span><span class="course-meta">崔贤岱[1-10] 2-005</span></td><td rowspan="2"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">范金虎[1-8] 2-102</span></td><td rowspan="2"><span class="course-name">嵌入式系统</span><span class="course-meta">崔贤岱[1-9] 3-001</span></td><td rowspan="2"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">范金虎[1-8] 3-203</span></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <!-- 3-4 -->
+                <tr><td class="time-col" rowspan="2">3-4<br>10:15-11:50</td><td rowspan="2"><span class="course-name">CMOS数字集成电路设计</span><span class="course-meta">邹维[1-12] 2-409</span></td><td rowspan="2"><span class="course-name">SoC片上系统设计</span><span class="course-meta">葛旭[1-6] 3-208</span></td><td rowspan="2"><span class="course-name">CMOS数字集成电路设计</span><span class="course-meta">邹维[1-12] 3-308</span></td><td rowspan="2"><span class="course-name">集成电路版图设计</span><span class="course-meta">胡阳森[1-8] 3-506</span></td><td rowspan="2"><span class="course-name">SoC片上系统设计</span><span class="course-meta">葛旭[1-6] 2-111</span></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <!-- 5-6 (全部空白) -->
+                <tr><td class="time-col" rowspan="2">5-6<br>14:00-15:35</td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <!-- 7-8空白 -->
+                <tr><td class="time-col" rowspan="2">7-8<br>15:55-17:30</td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <!-- 9-11 -->
+                <tr><td class="time-col" rowspan="3">9-11<br>18:30-20:55</td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">刘豫杰[10-12] 2-511</span></td><td rowspan="3"><span class="course-name">形势与政策-6</span><span class="course-meta">余姣[2-5] 工1-A003</span></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td></tr><tr></tr><tr></tr>
+            </tbody>
+        </table>
+        <div class="note"><i class="fas fa-clipboard-list"></i> 实践环节：集成电路设计课程设计【陈本源（15）】；学科竞赛培训实践2【陈本源（16-17）、李劲（16-17）、邹维（16-17）、江俊帮（16-17）】</div>`,
 
-        selectEl.addEventListener('change', function() {
-            const selected = this.value;
-            if (selected && timetableData[selected]) {
-                container.innerHTML = timetableData[selected];
-            } else {
-                container.innerHTML = `<p style="text-align:center; color:#1f6392; padding:40px;"><i class="fas fa-hand-point-up"></i> 请从上方下拉列表选择班级</p>`;
-            }
-        });
-    })();
+        class3: `<!-- 23集成2班 合并版 -->
+        <table>
+            <thead><tr><th>节次/时间</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead>
+            <tbody>
+                <!-- 1-2 -->
+                <tr><td class="time-col" rowspan="2">1-2<br>8:20-9:55</td><td rowspan="2"></td><td rowspan="2"><span class="course-name">嵌入式系统</span><span class="course-meta">崔贤岱[1-10] 2-005</span></td><td rowspan="2"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">范金虎[1-8] 2-102</span></td><td rowspan="2"><span class="course-name">嵌入式系统</span><span class="course-meta">崔贤岱[1-9] 3-001</span></td><td rowspan="2"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">范金虎[1-8] 3-203</span></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <!-- 3-4 -->
+                <tr><td class="time-col" rowspan="2">3-4<br>10:15-11:50</td><td rowspan="2"><span class="course-name">CMOS数字集成电路设计</span><span class="course-meta">张力[1周]2-101 / 张锋[2-12]3-208</span></td><td rowspan="2"><span class="course-name">SoC片上系统设计</span><span class="course-meta">葛旭[1-6] 3-208</span></td><td rowspan="2"></td><td rowspan="2"><span class="course-name">集成电路版图设计</span><span class="course-meta">胡阳森[1-8] 3-506</span></td><td rowspan="2"><span class="course-name">SoC片上系统设计</span><span class="course-meta">葛旭[1-6] 2-111</span></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <!-- 5-6 -->
+                <tr><td class="time-col" rowspan="2">5-6<br>14:00-15:35</td><td rowspan="2"><span class="course-name">CMOS数字集成电路设计</span><span class="course-meta">张锋[1-12] 3-108</span></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <!-- 7-8空白 -->
+                <tr><td class="time-col" rowspan="2">7-8<br>15:55-17:30</td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <!-- 9-11 -->
+                <tr><td class="time-col" rowspan="3">9-11<br>18:30-20:55</td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">刘豫杰[10-12] 2-511</span></td><td rowspan="3"></td><td rowspan="3"><span class="course-name">形势与政策-6</span><span class="course-meta">余姣[2-5] 工1-A003</span></td><td rowspan="3"></td><td rowspan="3"></td></tr><tr></tr><tr></tr>
+            </tbody>
+        </table>
+        <div class="note"><i class="fas fa-clipboard-list"></i> 实践环节：集成电路设计课程设计【陈本源（15）】；学科竞赛培训实践2【陈本源（16-17）、李劲（16-17）、邹维（16-17）、江俊帮（16-17）】</div>`,
+
+        class4: `<!-- 23微电子1班 合并版 -->
+        <table>
+            <thead><tr><th>节次/时间</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead>
+            <tbody>
+                <!-- 1-2 信息存储技术（周一、周三） -->
+                <tr><td class="time-col" rowspan="2">1-2<br>8:20-9:55</td><td rowspan="2"><span class="course-name">信息存储技术</span><span class="course-meta">王晗[1-8] 3-305</span></td><td rowspan="2"></td><td rowspan="2"><span class="course-name">信息存储技术</span><span class="course-meta">王晗[1-8] 3-305</span></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <!-- 3-4 封装测试 -->
+                <tr><td class="time-col" rowspan="2">3-4<br>10:15-11:50</td><td rowspan="2"></td><td rowspan="2"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">袁仙丹[1-8] 2-308</span></td><td rowspan="2"></td><td rowspan="2"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">袁仙丹[1-8] 2-507</span></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <!-- 5-6 微机电+版图 -->
+                <tr><td class="time-col" rowspan="2">5-6<br>14:00-15:35</td><td rowspan="2"><span class="course-name">微机电系统设计与制造</span><span class="course-meta">何超[1-14] 2-002</span></td><td rowspan="2"><span class="course-name">集成电路版图设计</span><span class="course-meta">张锋[1-8] 3-001</span></td><td rowspan="2"><span class="course-name">微机电系统设计与制造</span><span class="course-meta">何超[1-14] 2-002</span></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <!-- 7-8 空白 -->
+                <tr><td class="time-col" rowspan="2">7-8<br>15:55-17:30</td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <!-- 9-11 生涯+形策 -->
+                <tr><td class="time-col" rowspan="3">9-11<br>18:30-20:55</td><td rowspan="3"><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">荣光存[4-6] 3-004</span></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"><span class="course-name">形势与政策-6</span><span class="course-meta">何家华[2-5] 1-003</span></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td></tr><tr></tr><tr></tr>
+            </tbody>
+        </table>
+        <div class="note"><i class="fas fa-clipboard-list"></i> 实践环节：学科竞赛培训实践2【成纯富(16-17)、陈本源(16-17)、李根(16-17)、李劲(16-17)、邹维(16-17)、江俊帮(16-17)】</div>`,
+
+        class5: `<!-- 23微电子2班 合并版 -->
+        <table>
+            <thead><tr><th>节次/时间</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead>
+            <tbody>
+                <tr><td class="time-col" rowspan="2">1-2<br>8:20-9:55</td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"><span class="course-name">信息存储技术</span><span class="course-meta">胡阳森[1-8] 2-308</span></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">3-4<br>10:15-11:50</td><td rowspan="2"><span class="course-name">信息存储技术</span><span class="course-meta">胡阳森[1-8] 3-308</span></td><td rowspan="2"></td><td rowspan="2"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">范金虎[1-8] 3-208</span></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">5-6<br>14:00-15:35</td><td rowspan="2"><span class="course-name">微机电系统设计与制造</span><span class="course-meta">何超[1-14] 2-002</span></td><td rowspan="2"><span class="course-name">集成电路版图设计</span><span class="course-meta">张锋[1-8] 3-001</span></td><td rowspan="2"><span class="course-name">微机电系统设计与制造</span><span class="course-meta">何超[1-14] 2-002</span></td><td rowspan="2"></td><td rowspan="2"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">范金虎[1-8] 3-202</span></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">7-8<br>15:55-17:30</td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="3">9-11<br>18:30-20:55</td><td rowspan="3"><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">荣光存[4-6] 3-004</span></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"><span class="course-name">形势与政策-6</span><span class="course-meta">何家华[2-5] 1-003</span></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td></tr><tr></tr><tr></tr>
+            </tbody>
+        </table>
+        <div class="note"><i class="fas fa-clipboard-list"></i> 实践环节：学科竞赛培训实践2【成纯富(16-17)、陈本源(16-17)、李根(16-17)、李劲(16-17)、邹维(16-17)、江俊帮(16-17)】</div>`,
+
+        class6: `<!-- 23微电子3班 合并版 -->
+        <table>
+            <thead><tr><th>节次/时间</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead>
+            <tbody>
+                <tr><td class="time-col" rowspan="2">1-2<br>8:20-9:55</td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">3-4<br>10:15-11:50</td><td rowspan="2"></td><td rowspan="2"><span class="course-name">信息存储技术</span><span class="course-meta">贺晶[1-8] 3-308</span></td><td rowspan="2"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">范金虎[1-8] 3-208</span></td><td rowspan="2"><span class="course-name">信息存储技术</span><span class="course-meta">贺晶[1-8] 2-508</span></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">5-6<br>14:00-15:35</td><td rowspan="2"><span class="course-name">微机电系统设计与制造</span><span class="course-meta">何超[1-14] 2-002</span></td><td rowspan="2"><span class="course-name">集成电路版图设计</span><span class="course-meta">张锋[1-8] 3-001</span></td><td rowspan="2"><span class="course-name">微机电系统设计与制造</span><span class="course-meta">何超[1-14] 2-002</span></td><td rowspan="2"></td><td rowspan="2"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">范金虎[1-8] 3-202</span></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">7-8<br>15:55-17:30</td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="3">9-11<br>18:30-20:55</td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"><span class="course-name">形势与政策-6</span><span class="course-meta">何家华[2-5] 1-003</span></td><td rowspan="3"><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">荣光存[4-6] 2-401</span></td><td rowspan="3"></td><td rowspan="3"></td></tr><tr></tr><tr></tr>
+            </tbody>
+        </table>
+        <div class="note"><i class="fas fa-clipboard-list"></i> 实践环节：学科竞赛培训实践2【成纯富(16-17)、陈本源(16-17)、李根(16-17)、李劲(16-17)、邹维(16-17)、江俊帮(16-17)】</div>`,
+
+        class7: `<!-- 23信计1班 合并版 -->
+        <table>
+            <thead><tr><th>节次/时间</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead>
+            <tbody>
+                <tr><td class="time-col" rowspan="2">1-2<br>8:20-9:55</td><td rowspan="2"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 2-005</span></td><td rowspan="2"></td><td rowspan="2"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 3-001</span></td><td rowspan="2"></td><td rowspan="2"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 2-006</span></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">3-4<br>10:15-11:50</td><td rowspan="2"><span class="course-name">模式识别</span><span class="course-meta">荣伏梅[3-12] 3-002</span></td><td rowspan="2"><span class="course-name">信息论与编码</span><span class="course-meta">吴颖丹[1-12] 2-310</span></td><td rowspan="2"><span class="course-name">模式识别</span><span class="course-meta">荣伏梅[3-12] 2-001</span></td><td rowspan="2"><span class="course-name">信息论与编码</span><span class="course-meta">吴颖丹[1-12] 3-108</span></td><td rowspan="2"><span class="course-name">统计计算</span><span class="course-meta">吴聪[1-8] 2-001</span></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">5-6<br>14:00-15:35</td><td rowspan="2"><span class="course-name">统计计算</span><span class="course-meta">吴聪[1-8] 2-008</span></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">7-8<br>15:55-17:30</td><td rowspan="2"><span class="course-name">信息安全与密码学</span><span class="course-meta">陈华[1-12] 3-401</span></td><td rowspan="2"></td><td rowspan="2"><span class="course-name">信息安全与密码学</span><span class="course-meta">陈华[1-12] 3-403</span></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="3">9-11<br>18:30-20:55</td><td rowspan="3"></td><td rowspan="3"><span class="course-name">形势与政策-6</span><span class="course-meta">甘艳[2-5] 工1-A003</span><br><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">饶才骏[7-9] 2-414</span></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td></tr><tr></tr><tr></tr>
+            </tbody>
+        </table>
+        <div class="note"><i class="fas fa-clipboard-list"></i> 实践环节：数据处理实习【许松林(15-17)、方次军(15-17)、吴颖丹(15-17)、荣伏梅(15-17)】；数据挖掘课程设计【安彧(14)】；信息论与编码课程设计【吴颖丹(13)】</div>`,
+
+        class8: `<!-- 23信计2班 合并版 (同信计1) -->
+        <table>
+            <thead><tr><th>节次/时间</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead>
+            <tbody>
+                <tr><td class="time-col" rowspan="2">1-2<br>8:20-9:55</td><td rowspan="2"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 2-005</span></td><td rowspan="2"></td><td rowspan="2"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 3-001</span></td><td rowspan="2"></td><td rowspan="2"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 2-006</span></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">3-4<br>10:15-11:50</td><td rowspan="2"><span class="course-name">模式识别</span><span class="course-meta">荣伏梅[3-12] 3-002</span></td><td rowspan="2"><span class="course-name">信息论与编码</span><span class="course-meta">吴颖丹[1-12] 2-310</span></td><td rowspan="2"><span class="course-name">模式识别</span><span class="course-meta">荣伏梅[3-12] 2-001</span></td><td rowspan="2"><span class="course-name">信息论与编码</span><span class="course-meta">吴颖丹[1-12] 3-108</span></td><td rowspan="2"><span class="course-name">统计计算</span><span class="course-meta">吴聪[1-8] 2-001</span></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">5-6<br>14:00-15:35</td><td rowspan="2"><span class="course-name">统计计算</span><span class="course-meta">吴聪[1-8] 2-008</span></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">7-8<br>15:55-17:30</td><td rowspan="2"><span class="course-name">信息安全与密码学</span><span class="course-meta">陈华[1-12] 3-401</span></td><td rowspan="2"></td><td rowspan="2"><span class="course-name">信息安全与密码学</span><span class="course-meta">陈华[1-12] 3-403</span></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="3">9-11<br>18:30-20:55</td><td rowspan="3"></td><td rowspan="3"><span class="course-name">形势与政策-6</span><span class="course-meta">甘艳[2-5] 工1-A003</span><br><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">饶才骏[7-9] 2-414</span></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td></tr><tr></tr><tr></tr>
+            </tbody>
+        </table>
+        <div class="note"><i class="fas fa-clipboard-list"></i> 实践环节：数据处理实习【许松林(15-17)、方次军(15-17)、吴颖丹(15-17)、荣伏梅(15-17)】；数据挖掘课程设计【安彧(14)】；信息论与编码课程设计【吴颖丹(13)】</div>`,
+
+        class9: `<!-- 23统计1班 合并版 -->
+        <table>
+            <thead><tr><th>节次/时间</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead>
+            <tbody>
+                <tr><td class="time-col" rowspan="2">1-2<br>8:20-9:55</td><td rowspan="2"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 2-005</span></td><td rowspan="2"><span class="course-name">金融时间序列分析</span><span class="course-meta">李刚[1-10] 2-204</span></td><td rowspan="2"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 3-001</span></td><td rowspan="2"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 2-006</span></td><td rowspan="2"><span class="course-name">金融时间序列分析</span><span class="course-meta">李刚[1-10] 2-307</span></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">3-4<br>10:15-11:50</td><td rowspan="2"><span class="course-name">模式识别</span><span class="course-meta">荣伏梅[3-12] 3-002</span></td><td rowspan="2"><span class="course-name">数理金融</span><span class="course-meta">商豪[1-8] 2-504</span></td><td rowspan="2"><span class="course-name">模式识别</span><span class="course-meta">荣伏梅[3-12] 2-001</span></td><td rowspan="2"><span class="course-name">数理金融</span><span class="course-meta">商豪[1-8] 2-504</span></td><td rowspan="2"><span class="course-name">统计计算</span><span class="course-meta">吴聪[1-8] 2-001</span></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">5-6<br>14:00-15:35</td><td rowspan="2"><span class="course-name">统计计算</span><span class="course-meta">吴聪[1-8] 2-008</span></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">7-8<br>15:55-17:30</td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="3">9-11<br>18:30-20:55</td><td rowspan="3"></td><td rowspan="3"><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">饶才骏[7-9] 2-414</span></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"><span class="course-name">形势与政策-6</span><span class="course-meta">张瑞瑞[2-5] 1-004</span></td><td rowspan="3"></td><td rowspan="3"></td></tr><tr></tr><tr></tr>
+            </tbody>
+        </table>
+        <div class="note"><i class="fas fa-clipboard-list"></i> 实践环节：金融时间序列分析课程设计【李刚（13）】；社会调查【郑瑞坤（15-17）、蔡睿（15-17）】；数据挖掘课程设计【安彧（14）】</div>`
+    };
+
+    const selectEl = document.getElementById('classSelect');
+    const container = document.getElementById('timetableContainer');
+
+    selectEl.addEventListener('change', function() {
+        const selected = this.value;
+        if (selected && timetableData[selected]) {
+            container.innerHTML = timetableData[selected];
+        } else {
+            container.innerHTML = `<p style="text-align:center; color:#1f6392; padding:40px;"><i class="fas fa-hand-point-up"></i> 请从上方下拉列表选择班级</p>`;
+        }
+    });
+})();
 </script>
 </body>
 </html>
