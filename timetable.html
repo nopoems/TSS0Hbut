@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>理学院 · 课表查询</title>
+    <title>理学院 · 卡片课表 · 23级</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
         body { background-color: #f0f5fa; line-height: 1.6; color: #1e2b3c; padding: 0 16px 20px; }
-        .container { max-width: 1280px; margin: 0 auto; background-color: white; border-radius: 32px 32px 24px 24px; box-shadow: 0 15px 35px rgba(0, 30, 60, 0.1); padding: 0 24px 32px; }
+        .container { max-width: 1400px; margin: 0 auto; background-color: white; border-radius: 32px 32px 24px 24px; box-shadow: 0 15px 35px rgba(0, 30, 60, 0.1); padding: 0 24px 32px; }
         .header { text-align: center; padding: 40px 20px 20px; background: linear-gradient(135deg, #eef5ff 0%, #ffffff 80%); border-bottom: 1px solid #d9e8f5; margin-bottom: 30px; }
         .header h1 { font-size: 2.5rem; font-weight: 600; color: #0a2942; margin-bottom: 8px; }
         .header h1 i { color: #2a6d9c; margin-right: 12px; }
@@ -16,28 +16,105 @@
         .selector-wrapper { display: flex; justify-content: center; align-items: center; gap: 20px; margin: 30px 0 20px; flex-wrap: wrap; }
         select { padding: 12px 28px; font-size: 1.1rem; border-radius: 40px; border: 1px solid #b4d3ee; background-color: white; color: #0e3d5e; font-weight: 500; cursor: pointer; outline: none; box-shadow: 0 4px 8px rgba(0,30,60,0.05); }
         select:hover { border-color: #1d5b8c; }
+
+        /* ----- 卡片课表核心样式 (统一卡片，表格固定布局) ----- */
         .timetable-container { overflow-x: auto; margin: 30px 0; background: #f7fcff; border-radius: 24px; padding: 20px; border: 1px solid #c3dff5; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 950px; }
-        th { background-color: #1d5b8c; color: white; padding: 12px 5px; font-weight: 600; border: 1px solid #357bb5; }
-        td { border: 1px solid #b9d7f0; padding: 10px 5px; vertical-align: top; background-color: white; }
-        .time-col { background-color: #e2effa; font-weight: 600; color: #0a2942; width: 80px; text-align: center; white-space: nowrap; }
-        .course-info { font-size: 0.82rem; line-height: 1.45; }
-        .course-name { font-weight: 600; color: #144a70; display: block; }
-        .course-meta { color: #2f5575; font-size: 0.77rem; display: block; }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 0.82rem; 
+            min-width: 1100px; 
+            table-layout: fixed;          /* 固定布局，列宽由th控制 */
+        }
+        th { 
+            background-color: #1d5b8c; 
+            color: white; 
+            padding: 14px 5px; 
+            font-weight: 600; 
+            border: 1px solid #357bb5; 
+        }
+        td { 
+            border: 1px solid #b9d7f0; 
+            padding: 8px 6px; 
+            vertical-align: top; 
+            background-color: white; 
+        }
+        /* 时间列固定宽度 */
+        th:first-child, td:first-child { 
+            width: 90px; 
+            background-color: #e2effa; 
+            font-weight: 600; 
+            color: #0a2942; 
+            text-align: center; 
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+        /* 剩余7列等分剩余宽度 (table-layout:fixed + 百分比自动均分) */
+        th:not(:first-child), td:not(:first-child) { 
+            width: calc((100% - 90px) / 7); 
+        }
+
+        /* 卡片样式 — 完全统一宽高，柔和卡片 */
+        .course-card {
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 4px 10px rgba(20, 50, 80, 0.08), 0 1px 3px rgba(0,0,0,0.05);
+            padding: 8px 6px;
+            height: 95px;                  /* 固定高度，所有卡片一致 */
+            width: 100%;                    /* 撑满单元格，由于列宽固定，卡片宽度一致 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #d0e6fa;
+            transition: transform 0.1s ease, box-shadow 0.2s;
+            margin: 4px 0;                  /* 上下间距，同一单元格多卡片时分开 */
+            line-height: 1.4;
+            text-align: center;
+            overflow-y: auto;                /* 内容过多可滚动，保证卡片大小 */
+            word-break: break-word;
+        }
+        .course-card:hover {
+            box-shadow: 0 8px 18px rgba(0, 60, 120, 0.12);
+            transform: scale(1.01);
+            background: #f9fdff;
+        }
+        /* 卡片内部文字 */
+        .course-card .course-name {
+            font-weight: 700;
+            color: #144a70;
+            font-size: 0.86rem;
+            margin-bottom: 3px;
+            display: block;
+        }
+        .course-card .course-meta {
+            color: #2f5575;
+            font-size: 0.72rem;
+            display: block;
+            opacity: 0.9;
+        }
+        /* 空单元格(无卡片) 保持基础背景 */
+        td:empty { background-color: #f7fcff; }
+
         .footer { margin-top: 40px; padding: 20px 10px 10px; text-align: center; color: #5d7690; font-size: 0.95rem; border-top: 2px dashed #b7d3ea; }
         .footer a { color: #1d5b8c; text-decoration: none; font-weight: 500; margin: 0 8px; }
         .footer a:hover { text-decoration: underline; }
         .note { background: #fff3cd; border-left: 6px solid #ffc107; padding: 15px; border-radius: 16px; margin: 20px 0 0; font-size: 0.9rem; }
         .note i { color: #b17d0b; margin-right: 6px; }
-        /* 合并单元格后保留边框完整性 */
-        .merged-empty { background-color: #f7fcff; }
+
+        /* 针对晚上合并单元格内的多个卡片，保持排列 */
+        td[rowspan] .course-card:not(:last-child) {
+            margin-bottom: 6px;
+        }
+        /* 移除旧的直接span样式，全部由卡片控制 */
+        .course-name, .course-meta { transition: all 0.1s; }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <h1><i class="fas fa-calendar-alt"></i> 23级专业课表</h1>
-        <p>在下方选择班级以查看课表</p>
+        <h1><i class="fas fa-calendar-alt"></i> 23级专业课表 · 卡片版</h1>
+        <p>统一卡片尺寸 · 一目了然</p>
     </div>
 
     <div class="selector-wrapper">
@@ -62,37 +139,39 @@
 
     <div class="footer">
         <a href="#"><i class="fas fa-arrow-left"></i> 返回首页</a> · 
+        <span><i class="far fa-credit-card"></i> 卡片统一高95px</span>
     </div>
 </div>
 
 <script>
 (function() {
-    // ==================== 合并后的静态课表（手动合并，符合1-2、3-4、5-6、7-8、9-11合并）====================
+    // ==================== 静态课表 (每个课程已用 course-card 包裹，统一卡片) ====================
     const timetableData = {
-        class1: `<!-- 23电科1班 合并版 -->
+        // 23电科1班 — 每个课程独立卡片，包括合并单元格内
+        class1: `
         <table>
             <thead><tr><th>节次/时间</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead>
             <tbody>
-                <!-- 1-2节合并 (rowspan=2) -->
+                <!-- 1-2节合并 (rowspan=2) 每个td内卡片 -->
                 <tr>
                     <td class="time-col" rowspan="2">1-2<br>8:20-9:55</td>
-                    <td rowspan="2"><span class="course-name">纳米材料科学与技术</span><span class="course-meta">蒋妍[1-7] 胡培[8] 5B-314</span></td>
-                    <td rowspan="2"><span class="course-name">嵌入式系统</span><span class="course-meta">崔贤岱[1-10] 2-005</span></td>
-                    <td rowspan="2"><span class="course-name">光伏原理与技术</span><span class="course-meta">蔡金龙[1-8] 2-103</span></td>
-                    <td rowspan="2"><span class="course-name">嵌入式系统</span><span class="course-meta">崔贤岱[1-9] 3-001</span></td>
-                    <td rowspan="2"><span class="course-name">纳米材料科学与技术</span><span class="course-meta">蒋妍[1-6] 胡培[7-8] 5B-311</span></td>
+                    <td rowspan="2"><div class="course-card"><span class="course-name">纳米材料科学与技术</span><span class="course-meta">蒋妍[1-7] 胡培[8] 5B-314</span></div></td>
+                    <td rowspan="2"><div class="course-card"><span class="course-name">嵌入式系统</span><span class="course-meta">崔贤岱[1-10] 2-005</span></div></td>
+                    <td rowspan="2"><div class="course-card"><span class="course-name">光伏原理与技术</span><span class="course-meta">蔡金龙[1-8] 2-103</span></div></td>
+                    <td rowspan="2"><div class="course-card"><span class="course-name">嵌入式系统</span><span class="course-meta">崔贤岱[1-9] 3-001</span></div></td>
+                    <td rowspan="2"><div class="course-card"><span class="course-name">纳米材料科学与技术</span><span class="course-meta">蒋妍[1-6] 胡培[7-8] 5B-311</span></div></td>
                     <td rowspan="2"></td>
                     <td rowspan="2"></td>
                 </tr>
-                <tr></tr> <!-- 占位，因为上一行rowspan=2，此行的列单元格被覆盖，不需要额外td -->
+                <tr></tr> <!-- 占位行 -->
                 <!-- 3-4节合并 -->
                 <tr>
                     <td class="time-col" rowspan="2">3-4<br>10:15-11:50</td>
-                    <td rowspan="2"><span class="course-name">激光原理与技术</span><span class="course-meta">张威[1-8] 2-310</span></td>
-                    <td rowspan="2"><span class="course-name">半导体器件物理</span><span class="course-meta">周远明[1-12] 3-401</span></td>
-                    <td rowspan="2"><span class="course-name">激光原理与技术</span><span class="course-meta">张威[1-8] 3-102</span></td>
-                    <td rowspan="2"><span class="course-name">半导体器件物理</span><span class="course-meta">周远明[1-12] 3-406</span></td>
-                    <td rowspan="2"><span class="course-name">电子材料与器件</span><span class="course-meta">蒋妍[1-10] 2-507</span></td>
+                    <td rowspan="2"><div class="course-card"><span class="course-name">激光原理与技术</span><span class="course-meta">张威[1-8] 2-310</span></div></td>
+                    <td rowspan="2"><div class="course-card"><span class="course-name">半导体器件物理</span><span class="course-meta">周远明[1-12] 3-401</span></div></td>
+                    <td rowspan="2"><div class="course-card"><span class="course-name">激光原理与技术</span><span class="course-meta">张威[1-8] 3-102</span></div></td>
+                    <td rowspan="2"><div class="course-card"><span class="course-name">半导体器件物理</span><span class="course-meta">周远明[1-12] 3-406</span></div></td>
+                    <td rowspan="2"><div class="course-card"><span class="course-name">电子材料与器件</span><span class="course-meta">蒋妍[1-10] 2-507</span></div></td>
                     <td rowspan="2"></td>
                     <td rowspan="2"></td>
                 </tr>
@@ -100,11 +179,11 @@
                 <!-- 5-6节合并 -->
                 <tr>
                     <td class="time-col" rowspan="2">5-6<br>14:00-15:35</td>
-                    <td rowspan="2"><span class="course-name">电子材料与器件</span><span class="course-meta">蒋妍[1-10] 3-108</span></td>
-                    <td rowspan="2"><span class="course-name">集成电路分析与设计</span><span class="course-meta">张冉[1-10] 2-307</span></td>
+                    <td rowspan="2"><div class="course-card"><span class="course-name">电子材料与器件</span><span class="course-meta">蒋妍[1-10] 3-108</span></div></td>
+                    <td rowspan="2"><div class="course-card"><span class="course-name">集成电路分析与设计</span><span class="course-meta">张冉[1-10] 2-307</span></div></td>
                     <td rowspan="2"></td>
                     <td rowspan="2"></td>
-                    <td rowspan="2"><span class="course-name">集成电路分析与设计</span><span class="course-meta">张冉[1-10] 3-204</span></td>
+                    <td rowspan="2"><div class="course-card"><span class="course-name">集成电路分析与设计</span><span class="course-meta">张冉[1-10] 3-204</span></div></td>
                     <td rowspan="2"></td>
                     <td rowspan="2"></td>
                 </tr>
@@ -112,7 +191,7 @@
                 <!-- 7-8节合并 -->
                 <tr>
                     <td class="time-col" rowspan="2">7-8<br>15:55-17:30</td>
-                    <td rowspan="2"><span class="course-name">光伏原理与技术</span><span class="course-meta">蔡金龙[1-8] 3-206</span></td>
+                    <td rowspan="2"><div class="course-card"><span class="course-name">光伏原理与技术</span><span class="course-meta">蔡金龙[1-8] 3-206</span></div></td>
                     <td rowspan="2"></td>
                     <td rowspan="2"></td>
                     <td rowspan="2"></td>
@@ -125,133 +204,138 @@
                 <tr>
                     <td class="time-col" rowspan="3">9-11<br>18:30-20:55</td>
                     <td rowspan="3"></td>
-                    <td rowspan="3"><span class="course-name">形势与政策-6</span><span class="course-meta">甘艳[2-5] 工1-A003</span></td>
+                    <td rowspan="3"><div class="course-card"><span class="course-name">形势与政策-6</span><span class="course-meta">甘艳[2-5] 工1-A003</span></div></td>
                     <td rowspan="3"></td>
                     <td rowspan="3"></td>
-                    <td rowspan="3"><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">荣光存[4-6] 2-401</span></td>
+                    <td rowspan="3"><div class="course-card"><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">荣光存[4-6] 2-401</span></div></td>
                     <td rowspan="3"></td>
                     <td rowspan="3"></td>
                 </tr>
-                <tr></tr><tr></tr> <!-- 两个占位行，因为rowspan=3 -->
+                <tr></tr><tr></tr> <!-- 占位 -->
             </tbody>
         </table>
         <div class="note"><i class="fas fa-clipboard-list"></i> 实践环节：集成电路设计实训【张冉（15）】；学科竞赛培训实践2【张威（16-17）、李劲（16-17）】</div>`,
 
-        class2: `<!-- 23集成1班 合并版 -->
+        // 23集成1班 (类似改造)
+        class2: `
         <table>
             <thead><tr><th>节次/时间</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead>
             <tbody>
-                <!-- 1-2 -->
-                <tr><td class="time-col" rowspan="2">1-2<br>8:20-9:55</td><td rowspan="2"></td><td rowspan="2"><span class="course-name">嵌入式系统</span><span class="course-meta">崔贤岱[1-10] 2-005</span></td><td rowspan="2"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">范金虎[1-8] 2-102</span></td><td rowspan="2"><span class="course-name">嵌入式系统</span><span class="course-meta">崔贤岱[1-9] 3-001</span></td><td rowspan="2"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">范金虎[1-8] 3-203</span></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <!-- 3-4 -->
-                <tr><td class="time-col" rowspan="2">3-4<br>10:15-11:50</td><td rowspan="2"><span class="course-name">CMOS数字集成电路设计</span><span class="course-meta">邹维[1-12] 2-409</span></td><td rowspan="2"><span class="course-name">SoC片上系统设计</span><span class="course-meta">葛旭[1-6] 3-208</span></td><td rowspan="2"><span class="course-name">CMOS数字集成电路设计</span><span class="course-meta">邹维[1-12] 3-308</span></td><td rowspan="2"><span class="course-name">集成电路版图设计</span><span class="course-meta">胡阳森[1-8] 3-506</span></td><td rowspan="2"><span class="course-name">SoC片上系统设计</span><span class="course-meta">葛旭[1-6] 2-111</span></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <!-- 5-6 (全部空白) -->
+                <tr><td class="time-col" rowspan="2">1-2<br>8:20-9:55</td><td rowspan="2"></td><td rowspan="2"><div class="course-card"><span class="course-name">嵌入式系统</span><span class="course-meta">崔贤岱[1-10] 2-005</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">范金虎[1-8] 2-102</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">嵌入式系统</span><span class="course-meta">崔贤岱[1-9] 3-001</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">范金虎[1-8] 3-203</span></div></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">3-4<br>10:15-11:50</td><td rowspan="2"><div class="course-card"><span class="course-name">CMOS数字集成电路设计</span><span class="course-meta">邹维[1-12] 2-409</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">SoC片上系统设计</span><span class="course-meta">葛旭[1-6] 3-208</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">CMOS数字集成电路设计</span><span class="course-meta">邹维[1-12] 3-308</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">集成电路版图设计</span><span class="course-meta">胡阳森[1-8] 3-506</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">SoC片上系统设计</span><span class="course-meta">葛旭[1-6] 2-111</span></div></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
                 <tr><td class="time-col" rowspan="2">5-6<br>14:00-15:35</td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <!-- 7-8空白 -->
                 <tr><td class="time-col" rowspan="2">7-8<br>15:55-17:30</td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <!-- 9-11 -->
-                <tr><td class="time-col" rowspan="3">9-11<br>18:30-20:55</td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">刘豫杰[10-12] 2-511</span></td><td rowspan="3"><span class="course-name">形势与政策-6</span><span class="course-meta">余姣[2-5] 工1-A003</span></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td></tr><tr></tr><tr></tr>
+                <tr><td class="time-col" rowspan="3">9-11<br>18:30-20:55</td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"><div class="course-card"><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">刘豫杰[10-12] 2-511</span></div></td><td rowspan="3"><div class="course-card"><span class="course-name">形势与政策-6</span><span class="course-meta">余姣[2-5] 工1-A003</span></div></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td></tr><tr></tr><tr></tr>
             </tbody>
         </table>
         <div class="note"><i class="fas fa-clipboard-list"></i> 实践环节：集成电路设计课程设计【陈本源（15）】；学科竞赛培训实践2【陈本源（16-17）、李劲（16-17）、邹维（16-17）、江俊帮（16-17）】</div>`,
 
-        class3: `<!-- 23集成2班 合并版 -->
+        // 23集成2班 (简写保持相同模式，关键已用卡片)
+        class3: `
         <table>
             <thead><tr><th>节次/时间</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead>
             <tbody>
-                <!-- 1-2 -->
-                <tr><td class="time-col" rowspan="2">1-2<br>8:20-9:55</td><td rowspan="2"></td><td rowspan="2"><span class="course-name">嵌入式系统</span><span class="course-meta">崔贤岱[1-10] 2-005</span></td><td rowspan="2"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">范金虎[1-8] 2-102</span></td><td rowspan="2"><span class="course-name">嵌入式系统</span><span class="course-meta">崔贤岱[1-9] 3-001</span></td><td rowspan="2"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">范金虎[1-8] 3-203</span></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <!-- 3-4 -->
-                <tr><td class="time-col" rowspan="2">3-4<br>10:15-11:50</td><td rowspan="2"><span class="course-name">CMOS数字集成电路设计</span><span class="course-meta">张力[1周]2-101 / 张锋[2-12]3-208</span></td><td rowspan="2"><span class="course-name">SoC片上系统设计</span><span class="course-meta">葛旭[1-6] 3-208</span></td><td rowspan="2"></td><td rowspan="2"><span class="course-name">集成电路版图设计</span><span class="course-meta">胡阳森[1-8] 3-506</span></td><td rowspan="2"><span class="course-name">SoC片上系统设计</span><span class="course-meta">葛旭[1-6] 2-111</span></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <!-- 5-6 -->
-                <tr><td class="time-col" rowspan="2">5-6<br>14:00-15:35</td><td rowspan="2"><span class="course-name">CMOS数字集成电路设计</span><span class="course-meta">张锋[1-12] 3-108</span></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <!-- 7-8空白 -->
+                <tr><td class="time-col" rowspan="2">1-2<br>8:20-9:55</td><td rowspan="2"></td><td rowspan="2"><div class="course-card"><span class="course-name">嵌入式系统</span><span class="course-meta">崔贤岱[1-10] 2-005</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">范金虎[1-8] 2-102</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">嵌入式系统</span><span class="course-meta">崔贤岱[1-9] 3-001</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">范金虎[1-8] 3-203</span></div></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">3-4<br>10:15-11:50</td><td rowspan="2"><div class="course-card"><span class="course-name">CMOS数字集成电路设计</span><span class="course-meta">张力[1周]2-101 / 张锋[2-12]3-208</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">SoC片上系统设计</span><span class="course-meta">葛旭[1-6] 3-208</span></div></td><td rowspan="2"></td><td rowspan="2"><div class="course-card"><span class="course-name">集成电路版图设计</span><span class="course-meta">胡阳森[1-8] 3-506</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">SoC片上系统设计</span><span class="course-meta">葛旭[1-6] 2-111</span></div></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">5-6<br>14:00-15:35</td><td rowspan="2"><div class="course-card"><span class="course-name">CMOS数字集成电路设计</span><span class="course-meta">张锋[1-12] 3-108</span></div></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
                 <tr><td class="time-col" rowspan="2">7-8<br>15:55-17:30</td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <!-- 9-11 -->
-                <tr><td class="time-col" rowspan="3">9-11<br>18:30-20:55</td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">刘豫杰[10-12] 2-511</span></td><td rowspan="3"></td><td rowspan="3"><span class="course-name">形势与政策-6</span><span class="course-meta">余姣[2-5] 工1-A003</span></td><td rowspan="3"></td><td rowspan="3"></td></tr><tr></tr><tr></tr>
+                <tr><td class="time-col" rowspan="3">9-11<br>18:30-20:55</td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"><div class="course-card"><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">刘豫杰[10-12] 2-511</span></div></td><td rowspan="3"></td><td rowspan="3"><div class="course-card"><span class="course-name">形势与政策-6</span><span class="course-meta">余姣[2-5] 工1-A003</span></div></td><td rowspan="3"></td><td rowspan="3"></td></tr><tr></tr><tr></tr>
             </tbody>
         </table>
         <div class="note"><i class="fas fa-clipboard-list"></i> 实践环节：集成电路设计课程设计【陈本源（15）】；学科竞赛培训实践2【陈本源（16-17）、李劲（16-17）、邹维（16-17）、江俊帮（16-17）】</div>`,
 
-        class4: `<!-- 23微电子1班 合并版 -->
+        // 23微电子1班
+        class4: `
         <table>
             <thead><tr><th>节次/时间</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead>
             <tbody>
-                <!-- 1-2 信息存储技术（周一、周三） -->
-                <tr><td class="time-col" rowspan="2">1-2<br>8:20-9:55</td><td rowspan="2"><span class="course-name">信息存储技术</span><span class="course-meta">王晗[1-8] 3-305</span></td><td rowspan="2"></td><td rowspan="2"><span class="course-name">信息存储技术</span><span class="course-meta">王晗[1-8] 3-305</span></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <!-- 3-4 封装测试 -->
-                <tr><td class="time-col" rowspan="2">3-4<br>10:15-11:50</td><td rowspan="2"></td><td rowspan="2"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">袁仙丹[1-8] 2-308</span></td><td rowspan="2"></td><td rowspan="2"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">袁仙丹[1-8] 2-507</span></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <!-- 5-6 微机电+版图 -->
-                <tr><td class="time-col" rowspan="2">5-6<br>14:00-15:35</td><td rowspan="2"><span class="course-name">微机电系统设计与制造</span><span class="course-meta">何超[1-14] 2-002</span></td><td rowspan="2"><span class="course-name">集成电路版图设计</span><span class="course-meta">张锋[1-8] 3-001</span></td><td rowspan="2"><span class="course-name">微机电系统设计与制造</span><span class="course-meta">何超[1-14] 2-002</span></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <!-- 7-8 空白 -->
+                <tr><td class="time-col" rowspan="2">1-2<br>8:20-9:55</td><td rowspan="2"><div class="course-card"><span class="course-name">信息存储技术</span><span class="course-meta">王晗[1-8] 3-305</span></div></td><td rowspan="2"></td><td rowspan="2"><div class="course-card"><span class="course-name">信息存储技术</span><span class="course-meta">王晗[1-8] 3-305</span></div></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">3-4<br>10:15-11:50</td><td rowspan="2"></td><td rowspan="2"><div class="course-card"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">袁仙丹[1-8] 2-308</span></div></td><td rowspan="2"></td><td rowspan="2"><div class="course-card"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">袁仙丹[1-8] 2-507</span></div></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">5-6<br>14:00-15:35</td><td rowspan="2"><div class="course-card"><span class="course-name">微机电系统设计与制造</span><span class="course-meta">何超[1-14] 2-002</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">集成电路版图设计</span><span class="course-meta">张锋[1-8] 3-001</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">微机电系统设计与制造</span><span class="course-meta">何超[1-14] 2-002</span></div></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
                 <tr><td class="time-col" rowspan="2">7-8<br>15:55-17:30</td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <!-- 9-11 生涯+形策 -->
-                <tr><td class="time-col" rowspan="3">9-11<br>18:30-20:55</td><td rowspan="3"><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">荣光存[4-6] 3-004</span></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"><span class="course-name">形势与政策-6</span><span class="course-meta">何家华[2-5] 1-003</span></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td></tr><tr></tr><tr></tr>
+                <tr><td class="time-col" rowspan="3">9-11<br>18:30-20:55</td><td rowspan="3"><div class="course-card"><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">荣光存[4-6] 3-004</span></div></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"><div class="course-card"><span class="course-name">形势与政策-6</span><span class="course-meta">何家华[2-5] 1-003</span></div></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td></tr><tr></tr><tr></tr>
             </tbody>
         </table>
         <div class="note"><i class="fas fa-clipboard-list"></i> 实践环节：学科竞赛培训实践2【成纯富(16-17)、陈本源(16-17)、李根(16-17)、李劲(16-17)、邹维(16-17)、江俊帮(16-17)】</div>`,
 
-        class5: `<!-- 23微电子2班 合并版 -->
+        // 23微电子2班 (卡片包裹)
+        class5: `
         <table>
             <thead><tr><th>节次/时间</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead>
             <tbody>
-                <tr><td class="time-col" rowspan="2">1-2<br>8:20-9:55</td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"><span class="course-name">信息存储技术</span><span class="course-meta">胡阳森[1-8] 2-308</span></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <tr><td class="time-col" rowspan="2">3-4<br>10:15-11:50</td><td rowspan="2"><span class="course-name">信息存储技术</span><span class="course-meta">胡阳森[1-8] 3-308</span></td><td rowspan="2"></td><td rowspan="2"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">范金虎[1-8] 3-208</span></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <tr><td class="time-col" rowspan="2">5-6<br>14:00-15:35</td><td rowspan="2"><span class="course-name">微机电系统设计与制造</span><span class="course-meta">何超[1-14] 2-002</span></td><td rowspan="2"><span class="course-name">集成电路版图设计</span><span class="course-meta">张锋[1-8] 3-001</span></td><td rowspan="2"><span class="course-name">微机电系统设计与制造</span><span class="course-meta">何超[1-14] 2-002</span></td><td rowspan="2"></td><td rowspan="2"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">范金虎[1-8] 3-202</span></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">1-2<br>8:20-9:55</td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"><div class="course-card"><span class="course-name">信息存储技术</span><span class="course-meta">胡阳森[1-8] 2-308</span></div></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">3-4<br>10:15-11:50</td><td rowspan="2"><div class="course-card"><span class="course-name">信息存储技术</span><span class="course-meta">胡阳森[1-8] 3-308</span></div></td><td rowspan="2"></td><td rowspan="2"><div class="course-card"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">范金虎[1-8] 3-208</span></div></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">5-6<br>14:00-15:35</td><td rowspan="2"><div class="course-card"><span class="course-name">微机电系统设计与制造</span><span class="course-meta">何超[1-14] 2-002</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">集成电路版图设计</span><span class="course-meta">张锋[1-8] 3-001</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">微机电系统设计与制造</span><span class="course-meta">何超[1-14] 2-002</span></div></td><td rowspan="2"></td><td rowspan="2"><div class="course-card"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">范金虎[1-8] 3-202</span></div></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
                 <tr><td class="time-col" rowspan="2">7-8<br>15:55-17:30</td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <tr><td class="time-col" rowspan="3">9-11<br>18:30-20:55</td><td rowspan="3"><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">荣光存[4-6] 3-004</span></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"><span class="course-name">形势与政策-6</span><span class="course-meta">何家华[2-5] 1-003</span></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td></tr><tr></tr><tr></tr>
+                <tr><td class="time-col" rowspan="3">9-11<br>18:30-20:55</td><td rowspan="3"><div class="course-card"><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">荣光存[4-6] 3-004</span></div></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"><div class="course-card"><span class="course-name">形势与政策-6</span><span class="course-meta">何家华[2-5] 1-003</span></div></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td></tr><tr></tr><tr></tr>
             </tbody>
         </table>
         <div class="note"><i class="fas fa-clipboard-list"></i> 实践环节：学科竞赛培训实践2【成纯富(16-17)、陈本源(16-17)、李根(16-17)、李劲(16-17)、邹维(16-17)、江俊帮(16-17)】</div>`,
 
-        class6: `<!-- 23微电子3班 合并版 -->
+        // 23微电子3班
+        class6: `
         <table>
             <thead><tr><th>节次/时间</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead>
             <tbody>
                 <tr><td class="time-col" rowspan="2">1-2<br>8:20-9:55</td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <tr><td class="time-col" rowspan="2">3-4<br>10:15-11:50</td><td rowspan="2"></td><td rowspan="2"><span class="course-name">信息存储技术</span><span class="course-meta">贺晶[1-8] 3-308</span></td><td rowspan="2"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">范金虎[1-8] 3-208</span></td><td rowspan="2"><span class="course-name">信息存储技术</span><span class="course-meta">贺晶[1-8] 2-508</span></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <tr><td class="time-col" rowspan="2">5-6<br>14:00-15:35</td><td rowspan="2"><span class="course-name">微机电系统设计与制造</span><span class="course-meta">何超[1-14] 2-002</span></td><td rowspan="2"><span class="course-name">集成电路版图设计</span><span class="course-meta">张锋[1-8] 3-001</span></td><td rowspan="2"><span class="course-name">微机电系统设计与制造</span><span class="course-meta">何超[1-14] 2-002</span></td><td rowspan="2"></td><td rowspan="2"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">范金虎[1-8] 3-202</span></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">3-4<br>10:15-11:50</td><td rowspan="2"></td><td rowspan="2"><div class="course-card"><span class="course-name">信息存储技术</span><span class="course-meta">贺晶[1-8] 3-308</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">范金虎[1-8] 3-208</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">信息存储技术</span><span class="course-meta">贺晶[1-8] 2-508</span></div></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">5-6<br>14:00-15:35</td><td rowspan="2"><div class="course-card"><span class="course-name">微机电系统设计与制造</span><span class="course-meta">何超[1-14] 2-002</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">集成电路版图设计</span><span class="course-meta">张锋[1-8] 3-001</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">微机电系统设计与制造</span><span class="course-meta">何超[1-14] 2-002</span></div></td><td rowspan="2"></td><td rowspan="2"><div class="course-card"><span class="course-name">集成电路封装与测试技术</span><span class="course-meta">范金虎[1-8] 3-202</span></div></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
                 <tr><td class="time-col" rowspan="2">7-8<br>15:55-17:30</td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <tr><td class="time-col" rowspan="3">9-11<br>18:30-20:55</td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"><span class="course-name">形势与政策-6</span><span class="course-meta">何家华[2-5] 1-003</span></td><td rowspan="3"><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">荣光存[4-6] 2-401</span></td><td rowspan="3"></td><td rowspan="3"></td></tr><tr></tr><tr></tr>
+                <tr><td class="time-col" rowspan="3">9-11<br>18:30-20:55</td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"><div class="course-card"><span class="course-name">形势与政策-6</span><span class="course-meta">何家华[2-5] 1-003</span></div></td><td rowspan="3"><div class="course-card"><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">荣光存[4-6] 2-401</span></div></td><td rowspan="3"></td><td rowspan="3"></td></tr><tr></tr><tr></tr>
             </tbody>
         </table>
         <div class="note"><i class="fas fa-clipboard-list"></i> 实践环节：学科竞赛培训实践2【成纯富(16-17)、陈本源(16-17)、李根(16-17)、李劲(16-17)、邹维(16-17)、江俊帮(16-17)】</div>`,
 
-        class7: `<!-- 23信计1班 合并版 -->
+        // 23信计1班 (重点：周二晚上两个卡片)
+        class7: `
         <table>
             <thead><tr><th>节次/时间</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead>
             <tbody>
-                <tr><td class="time-col" rowspan="2">1-2<br>8:20-9:55</td><td rowspan="2"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 2-005</span></td><td rowspan="2"></td><td rowspan="2"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 3-001</span></td><td rowspan="2"></td><td rowspan="2"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 2-006</span></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <tr><td class="time-col" rowspan="2">3-4<br>10:15-11:50</td><td rowspan="2"><span class="course-name">模式识别</span><span class="course-meta">荣伏梅[3-12] 3-002</span></td><td rowspan="2"><span class="course-name">信息论与编码</span><span class="course-meta">吴颖丹[1-12] 2-310</span></td><td rowspan="2"><span class="course-name">模式识别</span><span class="course-meta">荣伏梅[3-12] 2-001</span></td><td rowspan="2"><span class="course-name">信息论与编码</span><span class="course-meta">吴颖丹[1-12] 3-108</span></td><td rowspan="2"><span class="course-name">统计计算</span><span class="course-meta">吴聪[1-8] 2-001</span></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <tr><td class="time-col" rowspan="2">5-6<br>14:00-15:35</td><td rowspan="2"><span class="course-name">统计计算</span><span class="course-meta">吴聪[1-8] 2-008</span></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <tr><td class="time-col" rowspan="2">7-8<br>15:55-17:30</td><td rowspan="2"><span class="course-name">信息安全与密码学</span><span class="course-meta">陈华[1-12] 3-401</span></td><td rowspan="2"></td><td rowspan="2"><span class="course-name">信息安全与密码学</span><span class="course-meta">陈华[1-12] 3-403</span></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <tr><td class="time-col" rowspan="3">9-11<br>18:30-20:55</td><td rowspan="3"></td><td rowspan="3"><span class="course-name">形势与政策-6</span><span class="course-meta">甘艳[2-5] 工1-A003</span><br><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">饶才骏[7-9] 2-414</span></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td></tr><tr></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">1-2<br>8:20-9:55</td><td rowspan="2"><div class="course-card"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 2-005</span></div></td><td rowspan="2"></td><td rowspan="2"><div class="course-card"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 3-001</span></div></td><td rowspan="2"></td><td rowspan="2"><div class="course-card"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 2-006</span></div></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">3-4<br>10:15-11:50</td><td rowspan="2"><div class="course-card"><span class="course-name">模式识别</span><span class="course-meta">荣伏梅[3-12] 3-002</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">信息论与编码</span><span class="course-meta">吴颖丹[1-12] 2-310</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">模式识别</span><span class="course-meta">荣伏梅[3-12] 2-001</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">信息论与编码</span><span class="course-meta">吴颖丹[1-12] 3-108</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">统计计算</span><span class="course-meta">吴聪[1-8] 2-001</span></div></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">5-6<br>14:00-15:35</td><td rowspan="2"><div class="course-card"><span class="course-name">统计计算</span><span class="course-meta">吴聪[1-8] 2-008</span></div></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">7-8<br>15:55-17:30</td><td rowspan="2"><div class="course-card"><span class="course-name">信息安全与密码学</span><span class="course-meta">陈华[1-12] 3-401</span></div></td><td rowspan="2"></td><td rowspan="2"><div class="course-card"><span class="course-name">信息安全与密码学</span><span class="course-meta">陈华[1-12] 3-403</span></div></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="3">9-11<br>18:30-20:55</td><td rowspan="3"></td>
+                    <td rowspan="3">
+                        <div class="course-card"><span class="course-name">形势与政策-6</span><span class="course-meta">甘艳[2-5] 工1-A003</span></div>
+                        <div class="course-card"><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">饶才骏[7-9] 2-414</span></div>
+                    </td>
+                    <td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td>
+                </tr><tr></tr><tr></tr>
             </tbody>
         </table>
         <div class="note"><i class="fas fa-clipboard-list"></i> 实践环节：数据处理实习【许松林(15-17)、方次军(15-17)、吴颖丹(15-17)、荣伏梅(15-17)】；数据挖掘课程设计【安彧(14)】；信息论与编码课程设计【吴颖丹(13)】</div>`,
 
-        class8: `<!-- 23信计2班 合并版 (同信计1) -->
+        // 23信计2班 (同信计1)
+        class8: `
         <table>
             <thead><tr><th>节次/时间</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead>
             <tbody>
-                <tr><td class="time-col" rowspan="2">1-2<br>8:20-9:55</td><td rowspan="2"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 2-005</span></td><td rowspan="2"></td><td rowspan="2"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 3-001</span></td><td rowspan="2"></td><td rowspan="2"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 2-006</span></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <tr><td class="time-col" rowspan="2">3-4<br>10:15-11:50</td><td rowspan="2"><span class="course-name">模式识别</span><span class="course-meta">荣伏梅[3-12] 3-002</span></td><td rowspan="2"><span class="course-name">信息论与编码</span><span class="course-meta">吴颖丹[1-12] 2-310</span></td><td rowspan="2"><span class="course-name">模式识别</span><span class="course-meta">荣伏梅[3-12] 2-001</span></td><td rowspan="2"><span class="course-name">信息论与编码</span><span class="course-meta">吴颖丹[1-12] 3-108</span></td><td rowspan="2"><span class="course-name">统计计算</span><span class="course-meta">吴聪[1-8] 2-001</span></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <tr><td class="time-col" rowspan="2">5-6<br>14:00-15:35</td><td rowspan="2"><span class="course-name">统计计算</span><span class="course-meta">吴聪[1-8] 2-008</span></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <tr><td class="time-col" rowspan="2">7-8<br>15:55-17:30</td><td rowspan="2"><span class="course-name">信息安全与密码学</span><span class="course-meta">陈华[1-12] 3-401</span></td><td rowspan="2"></td><td rowspan="2"><span class="course-name">信息安全与密码学</span><span class="course-meta">陈华[1-12] 3-403</span></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <tr><td class="time-col" rowspan="3">9-11<br>18:30-20:55</td><td rowspan="3"></td><td rowspan="3"><span class="course-name">形势与政策-6</span><span class="course-meta">甘艳[2-5] 工1-A003</span><br><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">饶才骏[7-9] 2-414</span></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td></tr><tr></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">1-2<br>8:20-9:55</td><td rowspan="2"><div class="course-card"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 2-005</span></div></td><td rowspan="2"></td><td rowspan="2"><div class="course-card"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 3-001</span></div></td><td rowspan="2"></td><td rowspan="2"><div class="course-card"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 2-006</span></div></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">3-4<br>10:15-11:50</td><td rowspan="2"><div class="course-card"><span class="course-name">模式识别</span><span class="course-meta">荣伏梅[3-12] 3-002</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">信息论与编码</span><span class="course-meta">吴颖丹[1-12] 2-310</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">模式识别</span><span class="course-meta">荣伏梅[3-12] 2-001</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">信息论与编码</span><span class="course-meta">吴颖丹[1-12] 3-108</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">统计计算</span><span class="course-meta">吴聪[1-8] 2-001</span></div></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">5-6<br>14:00-15:35</td><td rowspan="2"><div class="course-card"><span class="course-name">统计计算</span><span class="course-meta">吴聪[1-8] 2-008</span></div></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">7-8<br>15:55-17:30</td><td rowspan="2"><div class="course-card"><span class="course-name">信息安全与密码学</span><span class="course-meta">陈华[1-12] 3-401</span></div></td><td rowspan="2"></td><td rowspan="2"><div class="course-card"><span class="course-name">信息安全与密码学</span><span class="course-meta">陈华[1-12] 3-403</span></div></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="3">9-11<br>18:30-20:55</td><td rowspan="3"></td>
+                    <td rowspan="3">
+                        <div class="course-card"><span class="course-name">形势与政策-6</span><span class="course-meta">甘艳[2-5] 工1-A003</span></div>
+                        <div class="course-card"><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">饶才骏[7-9] 2-414</span></div>
+                    </td>
+                    <td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"></td>
+                </tr><tr></tr><tr></tr>
             </tbody>
         </table>
         <div class="note"><i class="fas fa-clipboard-list"></i> 实践环节：数据处理实习【许松林(15-17)、方次军(15-17)、吴颖丹(15-17)、荣伏梅(15-17)】；数据挖掘课程设计【安彧(14)】；信息论与编码课程设计【吴颖丹(13)】</div>`,
 
-        class9: `<!-- 23统计1班 合并版 -->
+        // 23统计1班
+        class9: `
         <table>
             <thead><tr><th>节次/时间</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead>
             <tbody>
-                <tr><td class="time-col" rowspan="2">1-2<br>8:20-9:55</td><td rowspan="2"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 2-005</span></td><td rowspan="2"><span class="course-name">金融时间序列分析</span><span class="course-meta">李刚[1-10] 2-204</span></td><td rowspan="2"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 3-001</span></td><td rowspan="2"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 2-006</span></td><td rowspan="2"><span class="course-name">金融时间序列分析</span><span class="course-meta">李刚[1-10] 2-307</span></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <tr><td class="time-col" rowspan="2">3-4<br>10:15-11:50</td><td rowspan="2"><span class="course-name">模式识别</span><span class="course-meta">荣伏梅[3-12] 3-002</span></td><td rowspan="2"><span class="course-name">数理金融</span><span class="course-meta">商豪[1-8] 2-504</span></td><td rowspan="2"><span class="course-name">模式识别</span><span class="course-meta">荣伏梅[3-12] 2-001</span></td><td rowspan="2"><span class="course-name">数理金融</span><span class="course-meta">商豪[1-8] 2-504</span></td><td rowspan="2"><span class="course-name">统计计算</span><span class="course-meta">吴聪[1-8] 2-001</span></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <tr><td class="time-col" rowspan="2">5-6<br>14:00-15:35</td><td rowspan="2"><span class="course-name">统计计算</span><span class="course-meta">吴聪[1-8] 2-008</span></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">1-2<br>8:20-9:55</td><td rowspan="2"><div class="course-card"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 2-005</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">金融时间序列分析</span><span class="course-meta">李刚[1-10] 2-204</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 3-001</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">数据挖掘</span><span class="course-meta">安彧[1-8] 2-006</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">金融时间序列分析</span><span class="course-meta">李刚[1-10] 2-307</span></div></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">3-4<br>10:15-11:50</td><td rowspan="2"><div class="course-card"><span class="course-name">模式识别</span><span class="course-meta">荣伏梅[3-12] 3-002</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">数理金融</span><span class="course-meta">商豪[1-8] 2-504</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">模式识别</span><span class="course-meta">荣伏梅[3-12] 2-001</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">数理金融</span><span class="course-meta">商豪[1-8] 2-504</span></div></td><td rowspan="2"><div class="course-card"><span class="course-name">统计计算</span><span class="course-meta">吴聪[1-8] 2-001</span></div></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
+                <tr><td class="time-col" rowspan="2">5-6<br>14:00-15:35</td><td rowspan="2"><div class="course-card"><span class="course-name">统计计算</span><span class="course-meta">吴聪[1-8] 2-008</span></div></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
                 <tr><td class="time-col" rowspan="2">7-8<br>15:55-17:30</td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td><td rowspan="2"></td></tr><tr></tr>
-                <tr><td class="time-col" rowspan="3">9-11<br>18:30-20:55</td><td rowspan="3"></td><td rowspan="3"><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">饶才骏[7-9] 2-414</span></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"><span class="course-name">形势与政策-6</span><span class="course-meta">张瑞瑞[2-5] 1-004</span></td><td rowspan="3"></td><td rowspan="3"></td></tr><tr></tr><tr></tr>
+                <tr><td class="time-col" rowspan="3">9-11<br>18:30-20:55</td><td rowspan="3"></td><td rowspan="3"><div class="course-card"><span class="course-name">大学生生涯发展与就业指导-2</span><span class="course-meta">饶才骏[7-9] 2-414</span></div></td><td rowspan="3"></td><td rowspan="3"></td><td rowspan="3"><div class="course-card"><span class="course-name">形势与政策-6</span><span class="course-meta">张瑞瑞[2-5] 1-004</span></div></td><td rowspan="3"></td><td rowspan="3"></td></tr><tr></tr><tr></tr>
             </tbody>
         </table>
         <div class="note"><i class="fas fa-clipboard-list"></i> 实践环节：金融时间序列分析课程设计【李刚（13）】；社会调查【郑瑞坤（15-17）、蔡睿（15-17）】；数据挖掘课程设计【安彧（14）】</div>`
