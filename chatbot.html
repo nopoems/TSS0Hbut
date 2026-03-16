@@ -82,6 +82,7 @@
             padding: 14px 0;
             background: transparent;
             color: #1b4b72;
+            min-width: 0;          /* 新增：允许输入框缩小，避免挤压兄弟元素 */
         }
         .input-area input::placeholder {
             color: #88a7c5;
@@ -101,6 +102,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;        /* 新增：禁止按钮被压缩，保持正圆形 */
         }
         .send-btn:hover {
             background-color: #0f4168;
